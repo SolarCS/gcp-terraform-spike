@@ -60,6 +60,13 @@ resource "google_storage_bucket_object" "archive" {
   depends_on = ["data.archive_file.zip_function"]
 }
 
+resource "google_vpc_access_connector" "connector" {
+  name          = "default-vpc-conn"
+  region        = "us-central1"
+  ip_cidr_range = "10.8.0.0/28"
+  network       = "default"
+}
+
 resource "google_cloudfunctions_function" "function" {
   name        = "function-test"
   description = "My function"
@@ -70,7 +77,7 @@ resource "google_cloudfunctions_function" "function" {
   source_archive_object = google_storage_bucket_object.archive.name
   entry_point           = "helloWorld"
 
-  vpc_connector = "default-vpc-connector"
+  vpc_connector = google_vpc_access_connector.connector.name
 
   event_trigger {
     event_type = "google.pubsub.topic.publish"
